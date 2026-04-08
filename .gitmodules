@@ -1,0 +1,9 @@
+[submodule "app"]
+	path = app
+	url = https://github.com/masterAventador/3yan-app.git
+[submodule "web"]
+	path = web
+	url = https://github.com/masterAventador/3yan-web.git
+[submodule "server"]
+	path = server
+	url = https://github.com/masterAventador/3yan-server.git
