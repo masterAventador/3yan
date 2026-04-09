@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aura Chat - Luminous Login</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#2a6869",
+                    "on-tertiary": "#fef7ff",
+                    "surface-dim": "#a1e6e7",
+                    "primary-fixed": "#73f1e4",
+                    "on-tertiary-container": "#44217b",
+                    "on-surface": "#00393a",
+                    "surface-container": "#c8f7f7",
+                    "on-primary-fixed": "#00443f",
+                    "outline-variant": "#80bcbd",
+                    "surface-bright": "#e2ffff",
+                    "on-primary-fixed-variant": "#00635c",
+                    "on-error-container": "#65000b",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#2d0064",
+                    "surface": "#e2ffff",
+                    "error-dim": "#70030f",
+                    "background": "#e2ffff",
+                    "tertiary-container": "#c9aaff",
+                    "secondary-container": "#cbe6ff",
+                    "on-secondary": "#f6f9ff",
+                    "surface-container-highest": "#b0eeee",
+                    "on-primary-container": "#005852",
+                    "tertiary": "#6e4da7",
+                    "primary": "#006b64",
+                    "secondary-fixed": "#cbe6ff",
+                    "primary-container": "#73f1e4",
+                    "on-background": "#00393a",
+                    "primary-fixed-dim": "#63e2d6",
+                    "surface-tint": "#006b64",
+                    "primary-dim": "#005e57",
+                    "tertiary-dim": "#62419a",
+                    "error": "#ac3434",
+                    "secondary-fixed-dim": "#aed9ff",
+                    "tertiary-fixed-dim": "#bd9afa",
+                    "secondary": "#006595",
+                    "outline": "#488485",
+                    "on-error": "#fff7f6",
+                    "error-container": "#f56965",
+                    "on-secondary-fixed": "#004366",
+                    "surface-container-low": "#d4fbfb",
+                    "inverse-surface": "#001111",
+                    "inverse-primary": "#7cfaed",
+                    "on-secondary-fixed-variant": "#006190",
+                    "inverse-on-surface": "#84a3a3",
+                    "surface-container-high": "#bcf2f3",
+                    "secondary-dim": "#005883",
+                    "on-secondary-container": "#005781",
+                    "on-primary": "#e2fffa",
+                    "tertiary-fixed": "#c9aaff",
+                    "on-tertiary-fixed-variant": "#4d2b85",
+                    "surface-variant": "#b0eeee"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .minty-azure-bg {
+            background: radial-gradient(circle at top left, #73f1e4 0%, #e2ffff 40%, #aed9ff 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex items-center justify-center overflow-hidden minty-azure-bg px-4">
+<!-- Decorative Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-fixed/20 rounded-full blur-[100px]"></div>
+<div class="fixed bottom-[-15%] left-[-5%] w-[600px] h-[600px] bg-secondary-fixed-dim/30 rounded-full blur-[120px]"></div>
+<main class="relative z-10 w-full max-w-[460px]">
+<!-- Login Card -->
+<div class="glass-panel rounded-2xl p-8 md:p-12 shadow-[0_20px_40px_rgba(0,57,58,0.06)] border border-white/20">
+<!-- Logo Section -->
+<div class="mb-12 text-center md:text-left">
+<div class="flex items-center justify-center md:justify-start gap-3 mb-4">
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">flare</span>
+</div>
+<h1 class="text-3xl font-extrabold font-headline tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        Aura Chat
+                    </h1>
+</div>
+<p class="text-on-surface-variant font-medium leading-relaxed max-w-[280px]">
+                    Step into a more luminous way to connect with your world.
+                </p>
+</div>
+<!-- Form -->
+<form class="space-y-6">
+<!-- Phone/Email Field -->
+<div class="space-y-2">
+<label class="block text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ml-1">
+                        Identity
+                    </label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">
+                            alternate_email
+                        </span>
+<input class="w-full h-14 pl-12 pr-4 bg-surface-container-highest/50 border-none rounded-xl focus:ring-1 focus:ring-primary focus:bg-surface-container-lowest transition-all placeholder:text-on-surface-variant/40 text-on-surface" placeholder="Email or phone number" type="text"/>
+</div>
+</div>
+<!-- Password Field (Simulated for visual completeness) -->
+<div class="space-y-2">
+<label class="block text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ml-1">
+                        Secure Key
+                    </label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">
+                            lock
+                        </span>
+<input class="w-full h-14 pl-12 pr-4 bg-surface-container-highest/50 border-none rounded-xl focus:ring-1 focus:ring-primary focus:bg-surface-container-lowest transition-all placeholder:text-on-surface-variant/40 text-on-surface" placeholder="Enter your password" type="password"/>
+</div>
+</div>
+<!-- Action Button -->
+<div class="pt-4">
+<button class="w-full h-14 bg-gradient-to-r from-primary-fixed to-secondary-fixed-dim hover:opacity-90 active:scale-95 transition-all rounded-full font-headline font-bold text-on-secondary-fixed shadow-[0_10px_25px_rgba(115,241,228,0.3)] flex items-center justify-center gap-2" type="submit">
+                        Sign In
+                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Footer Links -->
+<div class="mt-10 pt-8 border-t border-outline-variant/10 text-center space-y-4">
+<a class="block text-on-surface-variant font-medium hover:text-primary transition-colors text-sm" href="#">
+                    Forgot your password?
+                </a>
+<div class="text-sm font-medium">
+<span class="text-on-surface-variant/60">New to the aura?</span>
+<a class="ml-1 text-primary font-bold hover:underline underline-offset-4 decoration-2" href="#">
+                        Create Account
+                    </a>
+</div>
+</div>
+</div>
+<!-- Optional Editorial Quote (Asymmetric Layout Element) -->
+<div class="hidden lg:block absolute left-full ml-24 top-1/2 -translate-y-1/2 w-[300px]">
+<p class="text-display-lg font-headline font-extrabold text-primary/10 select-none pointer-events-none leading-none mb-6">
+                Connect.
+            </p>
+<p class="text-on-surface-variant italic font-body text-lg leading-relaxed opacity-60">
+                "Design is not just what it looks like and feels like. Design is how it works."
+            </p>
+</div>
+</main>
+<!-- Content for the "no-line" rule visualization -->
+<div class="fixed bottom-12 left-12 hidden md:flex items-center gap-4">
+<div class="flex -space-x-4">
+<div class="w-10 h-10 rounded-full border-2 border-surface overflow-hidden">
+<img alt="User" class="w-full h-full object-cover" data-alt="portrait of a smiling woman with a soft glow from natural light in a minimalist studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArl1C8QLpL4Xf2msCFfUq-U-iTXwHy8LccWl89TnaLEE9UHVLCEGidb-sk0lVnaNrJxDyhdjet_WR8EB1MTnXbo-RES4difaWJqhrYDnVdL8dPLViowWi5PHfS_MOGv2GBIAnkidjqwxuSDVfJ-PA6Do6yvUmKqCYlMVre8UtfXNTP2slz_AdYX0ue-zsPY8ghzlli0bAmdaSjEAMzggFBRt76pIlHRui9VIMp8eneqx-81B3jiI1GUagxzfLCsZPhLd6idDoJ6ds"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface overflow-hidden">
+<img alt="User" class="w-full h-full object-cover" data-alt="close up headshot of a man with thoughtful expression in soft overcast morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYNFmyhr-XYSLyR3xIed6xFVvqTbT4ZnPclDz37MSyFlv1GLxPbnaCWrFe6hVV0jsL4veibn5iJZn2mf4SN56_Qu-GfCCazxvjZ6fcJuBoQ8MPByZ35Fp3C604eb76UUu0Ad-p7eYYp1W97U72TaMKjMo-aTRJF8y7vfdHa4CbjOXUKkfTr1YQl2_Ay5BtAhMMkuOOkIUrJNLvvRFcstj52M1VKlTJPp0e-sENZAt6V1yeASe6dpZg8DHdVzYm3yjtCPm7Qk7bRFc"/>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-surface overflow-hidden">
+<img alt="User" class="w-full h-full object-cover" data-alt="modern artistic portrait of a woman with pastel makeup and soft diffused teal background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-bQVmBOXzWUaciyEkBx4b0iT5Ivc3msuVJbkhBRG-KSZjv862rX8Uklz0Fehu-ulHoAGJS7qSbwhEQGciUfMm5cAbIT9rbVe7WTybSsMu-GMZb9eC1w6hHbSVhHAWvthYSBmQx-NlBbe0SXvGNV94UmngZEPHuNeE6qzV3wRajfuM4X4S5RHVVGVZiTknXzfNiE5Vh7ELbr1wgHtQB3UWPiMMCSneW1toabu07a9dbUuQ32vqX9itTo4S9W9ZD3lPvWYqesBSdf4"/>
+</div>
+</div>
+<p class="text-xs font-label font-bold text-primary tracking-widest uppercase">Joining 10k+ Auras</p>
+</div>
+</body></html>
