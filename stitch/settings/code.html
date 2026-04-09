@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#fff7f6",
+                    "inverse-primary": "#7cfaed",
+                    "on-tertiary-container": "#44217b",
+                    "error-dim": "#70030f",
+                    "primary-fixed-dim": "#63e2d6",
+                    "surface-container-low": "#d4fbfb",
+                    "error": "#ac3434",
+                    "surface-container": "#c8f7f7",
+                    "primary-fixed": "#73f1e4",
+                    "error-container": "#f56965",
+                    "on-tertiary-fixed-variant": "#4d2b85",
+                    "on-tertiary": "#fef7ff",
+                    "surface": "#e2ffff",
+                    "secondary": "#006595",
+                    "primary": "#006b64",
+                    "tertiary-fixed-dim": "#bd9afa",
+                    "outline-variant": "#80bcbd",
+                    "on-secondary-container": "#005781",
+                    "tertiary": "#6e4da7",
+                    "tertiary-container": "#c9aaff",
+                    "outline": "#488485",
+                    "surface-container-highest": "#b0eeee",
+                    "surface-container-high": "#bcf2f3",
+                    "on-primary-container": "#005852",
+                    "secondary-dim": "#005883",
+                    "primary-container": "#73f1e4",
+                    "on-primary": "#e2fffa",
+                    "surface-variant": "#b0eeee",
+                    "secondary-container": "#cbe6ff",
+                    "inverse-on-surface": "#84a3a3",
+                    "on-secondary-fixed-variant": "#006190",
+                    "on-background": "#00393a",
+                    "on-secondary-fixed": "#004366",
+                    "on-surface-variant": "#2a6869",
+                    "on-error-container": "#65000b",
+                    "on-surface": "#00393a",
+                    "surface-tint": "#006b64",
+                    "surface-bright": "#e2ffff",
+                    "primary-dim": "#005e57",
+                    "inverse-surface": "#001111",
+                    "on-primary-fixed": "#00443f",
+                    "on-tertiary-fixed": "#2d0064",
+                    "tertiary-fixed": "#c9aaff",
+                    "on-primary-fixed-variant": "#00635c",
+                    "secondary-fixed": "#cbe6ff",
+                    "surface-dim": "#a1e6e7",
+                    "on-secondary": "#f6f9ff",
+                    "secondary-fixed-dim": "#aed9ff",
+                    "tertiary-dim": "#62419a",
+                    "surface-container-lowest": "#ffffff",
+                    "background": "#e2ffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top AppBar -->
+<header class="sticky top-0 w-full bg-cyan-50/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,57,58,0.06)] z-50">
+<div class="flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img alt="User Profile" data-alt="Close-up portrait of a professional woman with a soft confident smile against a blurred minimalist studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGWVoqTyahIMdEik3Y78RQyUxnR0NvBLSMFqkBvgsFxbfjDQigl2jE5TreudYoex0W8rQCexO-kfTqf_lGbTiAWeWS5l9K0ckG5554QFrQN6qOVldOKXuRa2_Sll6pi2mxY1aDw6z_d_NyklGZ8yWYrlFwza7IzsOJz-S9EDevpjqx11N1E4KHpN9Mvkff-cqOj4AeqzYb9LNG16mXnRtJ94dX1RIo1mwevArCGiHYekFyTAW3XEEZ9E8sQHT2sNus7jOw4K8Jxck"/>
+</div>
+<h1 class="font-headline tracking-tight font-bold text-xl text-teal-700">Aura Chat</h1>
+</div>
+<button class="p-2 rounded-full hover:bg-white/40 active:scale-95 duration-200 text-teal-700">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<main class="relative pb-32">
+<!-- Background Ambient Gradient -->
+<div class="absolute top-0 left-0 w-full h-[353px] bg-gradient-to-b from-primary-fixed/30 to-transparent pointer-events-none"></div>
+<!-- Profile Hero Section -->
+<section class="relative px-6 pt-12 pb-8 flex flex-col items-center">
+<div class="relative mb-6">
+<div class="w-32 h-32 rounded-full overflow-hidden ring-4 ring-surface-container-lowest shadow-xl">
+<img alt="Profile Large" data-alt="Close-up portrait of a professional woman with a soft confident smile against a blurred minimalist studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOSpxpJrxGwfY41ze5v7ByfXLIsfAV9ExpyTj68BMrrrtXxC9gF5Lj_b94qiqugVASAxom0TRnnIlXRQcF-CVsFPd8BVx3UOugrBHJpguH-3Wj1W_6aHsVF0ajb_LHL-KTZqSKzSlZnO_-Zd6IljX7bRUEZ5Vf19j8ERx0jAso996Vu61QV1BBaf_lUgu7YPWRKhM-FdymnZPAzNzBU5tDS5UWlNAFm9gxxsueJBb2RFcAqZ28v4ch9YN2mhAxOfQ1gmuh3G_atD4"/>
+</div>
+<button class="absolute bottom-1 right-1 bg-primary text-on-primary p-2.5 rounded-full shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-lg" data-icon="edit">edit</span>
+</button>
+</div>
+<h2 class="font-headline text-2xl font-extrabold text-on-surface tracking-tight">Elena Valerius</h2>
+<p class="text-on-surface-variant font-medium mt-1">elena.v@aurachat.io</p>
+</section>
+<!-- Settings Bento Grid -->
+<div class="px-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+<!-- Account Section -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-[0_20px_40px_rgba(0,57,58,0.04)] space-y-6">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+<h3 class="font-headline font-bold text-lg">Account</h3>
+</div>
+<div class="space-y-5">
+<div class="flex justify-between items-center group cursor-pointer">
+<div>
+<p class="font-semibold text-on-surface">Personal Information</p>
+<p class="text-xs text-on-surface-variant">Name, email, phone</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex justify-between items-center group cursor-pointer">
+<div>
+<p class="font-semibold text-on-surface">Password &amp; Security</p>
+<p class="text-xs text-on-surface-variant">Two-factor authentication</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Appearance Section (With Toggle) -->
+<div class="bg-surface-container-low rounded-xl p-6 space-y-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" data-icon="palette">palette</span>
+<h3 class="font-headline font-bold text-lg">Appearance</h3>
+</div>
+<div class="space-y-5">
+<div class="flex justify-between items-center">
+<div>
+<p class="font-semibold text-on-surface">Dark Mode</p>
+<p class="text-xs text-on-surface-variant">Switch between themes</p>
+</div>
+<button class="w-12 h-6 bg-primary rounded-full relative transition-colors duration-300">
+<span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
+</button>
+</div>
+<div class="flex justify-between items-center group cursor-pointer">
+<div>
+<p class="font-semibold text-on-surface">Chat Wallpaper</p>
+<p class="text-xs text-on-surface-variant">Custom background patterns</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Notifications Section -->
+<div class="bg-surface-container rounded-xl p-6 md:col-span-2 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-tertiary" data-icon="notifications">notifications</span>
+<h3 class="font-headline font-bold text-lg">Notifications</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+<div class="flex items-center justify-between p-4 bg-white/40 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="message">message</span>
+</div>
+<span class="font-semibold">Messages</span>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white/40 rounded-xl">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="call">call</span>
+</div>
+<span class="font-semibold">Calls</span>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Privacy & Help (Shared row) -->
+<div class="bg-surface-container-highest rounded-xl p-6">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-on-surface" data-icon="lock">lock</span>
+<h3 class="font-headline font-bold text-lg">Privacy</h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface cursor-pointer py-1">
+<span class="material-symbols-outlined text-xl" data-icon="visibility_off">visibility_off</span>
+<span class="font-medium">Last Seen &amp; Online</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface cursor-pointer py-1">
+<span class="material-symbols-outlined text-xl" data-icon="block">block</span>
+<span class="font-medium">Blocked Contacts</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 border-outline-variant/10 border">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="help">help</span>
+<h3 class="font-headline font-bold text-lg">Help</h3>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface cursor-pointer py-1">
+<span class="material-symbols-outlined text-xl" data-icon="quiz">quiz</span>
+<span class="font-medium">FAQ</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface cursor-pointer py-1">
+<span class="material-symbols-outlined text-xl" data-icon="description">description</span>
+<span class="font-medium">Terms of Service</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Log out button -->
+<div class="mt-12 px-6 text-center max-w-4xl mx-auto">
+<button class="w-full py-4 px-6 rounded-xl border border-error/20 text-error font-bold hover:bg-error/5 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout from Aura Chat
+            </button>
+</div>
+</main>
+<!-- Bottom NavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl shadow-[0_-10px_30px_rgba(0,57,58,0.04)] rounded-t-[2rem]">
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-teal-500 transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-manrope text-[11px] font-semibold tracking-wide mt-1">Messages</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-teal-500 transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-manrope text-[11px] font-semibold tracking-wide mt-1">Contacts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-teal-500 transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined" data-icon="motion_photos_on">motion_photos_on</span>
+<span class="font-manrope text-[11px] font-semibold tracking-wide mt-1">Status</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-cyan-100/50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 rounded-2xl px-5 py-2 hover:text-teal-500 transition-all active:scale-90 duration-300">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-manrope text-[11px] font-semibold tracking-wide mt-1">Settings</span>
+</div>
+</nav>
+</body></html>
