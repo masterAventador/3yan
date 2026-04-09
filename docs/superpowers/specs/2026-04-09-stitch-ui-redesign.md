@@ -223,6 +223,24 @@ AI 消息:
   [文字 15px, 白色]
   [时间戳在下方右侧 + 已读图标]
 
+语音消息气泡（来源: chat_detail_with_media_bubbles）:
+  用户发送:
+    [薄荷→天蓝渐变背景(#73F1E4→#AED9FF), 圆角24px, 右上方角(tr=0)]
+    [白色圆形播放按钮 40px, 内含 play_arrow 图标, 点击切换 pause]
+    [波形条: 15根竖条, 白色/40%, 高度随机(2-6px), 宽2px, 圆角, 播放时高亮变白色]
+    [时长文字: Inter 11px, semibold, #00393A/70%]
+  AI 发送:
+    [白色底 #FFFFFF, 圆角24px, 左上方角(tl=0)]
+    [primary 色圆形播放按钮]
+    [波形条: primary/40%, 播放时高亮 primary]
+    [时长文字: Inter 11px, #2A6869]
+
+视频消息气泡（来源: chat_detail_with_media_bubbles）:
+  [缩略图: 宽度占满, 宽高比 4:5, 圆角32px, 发送方角 tr=0/接收方角 tl=0]
+  [居中毛玻璃播放按钮: 64px 圆形, 白色/20% + blur + 白色边框/40%]
+  [底部进度条: 白色/20% 背景, primaryFixed 色前景, 发光阴影效果]
+  [内部 ring 边框: 白色/30% inset, 营造层次感]
+
 正在输入: 三个弹跳圆点(primary/40%) + "正在输入" Inter 10px
 ```
 
@@ -289,6 +307,8 @@ AI 消息:
 - `app/business_packages/sanyan_chat/lib/src/chat/chat_page.dart` — 完全重写
 - `app/business_packages/sanyan_chat/lib/src/chat/widget/message_bubble.dart` — 完全重写
 - `app/business_packages/sanyan_chat/lib/src/chat/widget/chat_input_bar.dart` — 完全重写
+- `app/business_packages/sanyan_chat/lib/src/chat/widget/voice_bubble.dart` — 新增，语音消息气泡（波形条+播放按钮）
+- `app/business_packages/sanyan_chat/lib/src/chat/widget/video_bubble.dart` — 新增，视频消息气泡（缩略图+毛玻璃播放按钮）
 - `app/pubspec.yaml` — 添加 google_fonts 依赖（Manrope）
 
 ### 删除
@@ -310,4 +330,4 @@ AI 消息:
 - Dark Mode 实现（Settings 里有开关但不实现）
 - Status 页面内容（占位页面）
 - 第三方登录功能
-- 聊天页发图片功能
+- 聊天页发图片/视频功能（视频气泡只做 UI 壳子，不实现发送和播放逻辑）

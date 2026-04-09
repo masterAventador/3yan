@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#63e2d6",
+                        "primary": "#006b64",
+                        "surface-tint": "#006b64",
+                        "surface-variant": "#b0eeee",
+                        "surface-container-high": "#bcf2f3",
+                        "on-secondary-fixed": "#004366",
+                        "outline-variant": "#80bcbd",
+                        "tertiary": "#6e4da7",
+                        "error-container": "#f56965",
+                        "surface": "#e2ffff",
+                        "primary-container": "#73f1e4",
+                        "surface-bright": "#e2ffff",
+                        "tertiary-container": "#c9aaff",
+                        "tertiary-dim": "#62419a",
+                        "tertiary-fixed-dim": "#bd9afa",
+                        "on-background": "#00393a",
+                        "surface-container-low": "#d4fbfb",
+                        "on-tertiary-fixed": "#2d0064",
+                        "on-error": "#fff7f6",
+                        "secondary-dim": "#005883",
+                        "on-surface": "#00393a",
+                        "error-dim": "#70030f",
+                        "on-primary-fixed-variant": "#00635c",
+                        "on-primary-container": "#005852",
+                        "on-surface-variant": "#2a6869",
+                        "primary-fixed": "#73f1e4",
+                        "on-secondary-container": "#005781",
+                        "inverse-surface": "#001111",
+                        "on-error-container": "#65000b",
+                        "on-secondary": "#f6f9ff",
+                        "on-tertiary": "#fef7ff",
+                        "inverse-primary": "#7cfaed",
+                        "inverse-on-surface": "#84a3a3",
+                        "on-tertiary-container": "#44217b",
+                        "secondary": "#006595",
+                        "surface-container-highest": "#b0eeee",
+                        "secondary-fixed": "#cbe6ff",
+                        "background": "#e2ffff",
+                        "tertiary-fixed": "#c9aaff",
+                        "surface-container": "#c8f7f7",
+                        "on-primary": "#e2fffa",
+                        "on-primary-fixed": "#00443f",
+                        "outline": "#488485",
+                        "secondary-fixed-dim": "#aed9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#006190",
+                        "surface-dim": "#a1e6e7",
+                        "error": "#ac3434",
+                        "primary-dim": "#005e57",
+                        "secondary-container": "#cbe6ff",
+                        "on-tertiary-fixed-variant": "#4d2b85"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-gradient-text {
+            background: linear-gradient(135deg, #006b64 0%, #006595 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen selection:bg-primary-container">
+<!-- TopAppBar -->
+<nav class="w-full top-0 sticky z-50 bg-[#e2ffff] dark:bg-[#001f1e] shadow-[0_20px_40px_rgba(0,57,58,0.06)] transition-colors duration-300">
+<div class="flex items-center justify-between px-8 py-4 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-3 active:scale-95 duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#006b64] dark:text-[#73f1e4]" data-icon="palette">palette</span>
+<h1 class="text-[#006b64] dark:text-[#73f1e4] font-manrope font-bold tracking-tight text-2xl">Luminous Palettes</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="p-2 rounded-full hover:bg-[#b0eeee]/40 dark:hover:bg-[#00393a]/40 transition-all active:scale-95 cursor-pointer">
+<span class="material-symbols-outlined text-[#006b64] dark:text-[#73f1e4]" data-icon="search">search</span>
+</div>
+</div>
+</div>
+</nav>
+<main class="pb-32 pt-8 px-6 max-w-md mx-auto">
+<!-- Header Section -->
+<header class="mb-10 text-center">
+<span class="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-on-surface-variant mb-3 block">Design Gallery</span>
+<h2 class="text-4xl font-headline font-extrabold tracking-tighter editorial-gradient-text">Ethereal Gradients</h2>
+<p class="mt-4 text-on-surface-variant leading-relaxed font-medium">Curated color harmonies for high-end editorial experiences.</p>
+</header>
+<!-- Gallery Grid -->
+<div class="space-y-12">
+<!-- Set 1: Mint to Soft Azure -->
+<section class="group relative">
+<div class="h-[320px] w-full rounded-xl shadow-[0_20px_40px_rgba(0,57,58,0.06)] overflow-hidden bg-gradient-to-br from-[#73f1e4] to-[#aed9ff] relative mb-6 border border-[#80bcbd]/15">
+<div class="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline font-bold text-2xl tracking-tight text-on-surface">Minty Azure</h3>
+<div class="flex gap-4 mt-3">
+<div class="flex flex-col">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Start</span>
+<code class="text-sm font-semibold text-primary">#73F1E4</code>
+</div>
+<div class="flex flex-col border-l border-outline-variant/30 pl-4">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">End</span>
+<code class="text-sm font-semibold text-secondary">#AED9FF</code>
+</div>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary-dim text-on-primary px-6 py-3 rounded-full font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20">
+                        Copy CSS
+                    </button>
+</div>
+</section>
+<!-- Set 2: Pearl White to Lavender Mist -->
+<section class="group relative">
+<div class="h-[320px] w-full rounded-xl shadow-[0_20px_40px_rgba(0,57,58,0.06)] overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#C9AAFF] relative mb-6 border border-[#80bcbd]/15">
+<div class="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline font-bold text-2xl tracking-tight text-on-surface">Pearl Lavender</h3>
+<div class="flex gap-4 mt-3">
+<div class="flex flex-col">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Start</span>
+<code class="text-sm font-semibold text-primary">#FFFFFF</code>
+</div>
+<div class="flex flex-col border-l border-outline-variant/30 pl-4">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">End</span>
+<code class="text-sm font-semibold text-secondary">#C9AAFF</code>
+</div>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary-dim text-on-primary px-6 py-3 rounded-full font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20">
+                        Copy CSS
+                    </button>
+</div>
+</section>
+<!-- Set 3: Warm Peach to Sunset Coral -->
+<section class="group relative">
+<div class="h-[320px] w-full rounded-xl shadow-[0_20px_40px_rgba(0,57,58,0.06)] overflow-hidden bg-gradient-to-br from-[#FFD5C2] to-[#F56965] relative mb-6 border border-[#80bcbd]/15">
+<div class="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline font-bold text-2xl tracking-tight text-on-surface">Sunset Aura</h3>
+<div class="flex gap-4 mt-3">
+<div class="flex flex-col">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Start</span>
+<code class="text-sm font-semibold text-primary">#FFD5C2</code>
+</div>
+<div class="flex flex-col border-l border-outline-variant/30 pl-4">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">End</span>
+<code class="text-sm font-semibold text-secondary">#F56965</code>
+</div>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary-dim text-on-primary px-6 py-3 rounded-full font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20">
+                        Copy CSS
+                    </button>
+</div>
+</section>
+<!-- Set 4: Deep Ocean Teal to Emerald -->
+<section class="group relative">
+<div class="h-[320px] w-full rounded-xl shadow-[0_20px_40px_rgba(0,57,58,0.06)] overflow-hidden bg-gradient-to-br from-[#006B64] to-[#005852] relative mb-6 border border-[#80bcbd]/15">
+<div class="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline font-bold text-2xl tracking-tight text-on-surface">Deep Emerald</h3>
+<div class="flex gap-4 mt-3">
+<div class="flex flex-col">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Start</span>
+<code class="text-sm font-semibold text-primary">#006B64</code>
+</div>
+<div class="flex flex-col border-l border-outline-variant/30 pl-4">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">End</span>
+<code class="text-sm font-semibold text-secondary">#005852</code>
+</div>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary-dim text-on-primary px-6 py-3 rounded-full font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20">
+                        Copy CSS
+                    </button>
+</div>
+</section>
+<!-- Set 5: Champagne Gold to Soft Rose -->
+<section class="group relative">
+<div class="h-[320px] w-full rounded-xl shadow-[0_20px_40px_rgba(0,57,58,0.06)] overflow-hidden bg-gradient-to-br from-[#F7E7CE] to-[#F1B6B6] relative mb-6 border border-[#80bcbd]/15">
+<div class="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline font-bold text-2xl tracking-tight text-on-surface">Soft Champagne</h3>
+<div class="flex gap-4 mt-3">
+<div class="flex flex-col">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">Start</span>
+<code class="text-sm font-semibold text-primary">#F7E7CE</code>
+</div>
+<div class="flex flex-col border-l border-outline-variant/30 pl-4">
+<span class="font-label text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">End</span>
+<code class="text-sm font-semibold text-secondary">#F1B6B6</code>
+</div>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary-dim text-on-primary px-6 py-3 rounded-full font-bold text-sm transition-all active:scale-95 shadow-lg shadow-primary/20">
+                        Copy CSS
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-[1.5rem] bg-[#e2ffff]/80 dark:bg-[#001f1e]/80 backdrop-blur-xl border-t border-[#80bcbd]/15 shadow-[0_-10px_30px_rgba(0,57,58,0.04)]">
+<div class="flex justify-around items-center px-4 py-3">
+<!-- Explore: Active -->
+<div class="flex flex-col items-center justify-center bg-[#cbe6ff]/40 dark:bg-[#006595]/20 text-[#006b64] dark:text-[#73f1e4] rounded-[1.5rem] px-5 py-2 active:translate-y-0.5 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="explore">explore</span>
+<span class="font-manrope text-[11px] font-semibold uppercase tracking-widest mt-1">Explore</span>
+</div>
+<!-- Create -->
+<div class="flex flex-col items-center justify-center text-[#2a6869] dark:text-[#80bcbd] px-5 py-2 hover:text-[#005e57] dark:hover:text-[#ffffff] active:translate-y-0.5 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="add_circle">add_circle</span>
+<span class="font-manrope text-[11px] font-semibold uppercase tracking-widest mt-1">Create</span>
+</div>
+<!-- Saved -->
+<div class="flex flex-col items-center justify-center text-[#2a6869] dark:text-[#80bcbd] px-5 py-2 hover:text-[#005e57] dark:hover:text-[#ffffff] active:translate-y-0.5 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="bookmark">bookmark</span>
+<span class="font-manrope text-[11px] font-semibold uppercase tracking-widest mt-1">Saved</span>
+</div>
+<!-- Profile -->
+<div class="flex flex-col items-center justify-center text-[#2a6869] dark:text-[#80bcbd] px-5 py-2 hover:text-[#005e57] dark:hover:text-[#ffffff] active:translate-y-0.5 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="person">person</span>
+<span class="font-manrope text-[11px] font-semibold uppercase tracking-widest mt-1">Profile</span>
+</div>
+</div>
+</nav>
+</body></html>
