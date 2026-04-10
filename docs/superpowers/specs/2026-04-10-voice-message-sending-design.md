@@ -117,18 +117,32 @@ foundation_packages/sanyan_user/lib/src/dao/local_storage.dart
 
 ### 2.4 ChatInputBar 改造
 
+设计稿来源：`stitch/chat_detail_voice_recording_interaction/`
+
 **模式**：
 ```dart
 enum ChatInputMode { keyboard, voice }
 ```
 
-**布局**：
+**整体容器**：
+- `surface-container-lowest/80%` 白色半透明底色
+- `outline-variant/10%` 细边框
+- 圆角 full
+- 轻阴影（on-surface/5%）
+
+**布局**（从左到右，gap 12px，padding 8px）：
 ```
-[🎤/⌨️] [输入框 或 按住说话长条按钮] [😀 表情] [+ 加号]
+[🎤/⌨️] [输入框 或 按住说话长条按钮] [😀] [+]
 ```
 
-- `ChatInputMode.keyboard`：左侧显示麦克风图标，中间是 TextField
-- `ChatInputMode.voice`：左侧显示键盘图标，中间是 HoldToSpeakButton
+- `ChatInputMode.keyboard`：左侧图标 `mic`（primary 色），中间是 TextField
+- `ChatInputMode.voice`：左侧图标 `keyboard`（primary 色），中间是 HoldToSpeakButton
+
+**按住说话长条按钮样式**：
+- 圆角 full，flex-grow 占满剩余空间
+- 默认底色 `surface-container/50%`
+- 按下时底色 `primary-container`，文字色 `primary`
+- 居中文字："按住说话"（Manrope 14px，`onSurfaceVariant` 色）
 
 **模式切换**：点击左侧图标切换。切换后立即保存到 `LocalStorage.lastInputMode`。
 
@@ -136,20 +150,30 @@ enum ChatInputMode { keyboard, voice }
 
 ### 2.5 录音浮层
 
-按住说话按钮时，在输入栏上方悬浮显示：
+设计稿来源：`stitch/voice_recording_overlay_full_view/` 和 `stitch/chat_detail_voice_recording_interaction/`
 
-```
-┌─────────────────────────┐
-│                         │
-│         🎤              │  ← 麦克风图标
-│                         │
-│       正在录音          │
-│        00:12            │  ← 实时秒数
-│                         │
-│    👆 松开发送          │
-│    👆 上滑取消          │
-└─────────────────────────┘
-```
+**布局**：全屏覆盖（Positioned.fill），`Stack` 叠加在聊天页之上，z-index 最高。
+
+**背景**：
+- 径向渐变：从中心 `surface-dim/40%` → 外围 `surface-bright/80%`
+- 毛玻璃模糊：`BackdropFilter(blur: 24)`
+
+**三段式纵向布局**（顶-中-底，justifyContent: space-between, padding: 96px 上下 / 32px 左右）：
+
+1. **顶部：跳动波形条**
+   - 7 根竖条，宽 1.5px，水平间距 6px
+   - 颜色渐变：primary/40% → primary/60% → primary → secondary → primary → primary/60% → primary/40%
+   - 高度动画：20% → 100% → 20%，循环 1.2s
+   - 每根不同 animation-delay（0.1s / 0.3s / 0.5s / 0.2s / 0.4s / 0.6s / 0.1s）
+
+2. **中间：发光麦克风圆**
+   - 132px 圆形，`LinearGradient(primary → secondary)`
+   - 内含白色麦克风图标（60px，填充样式）
+   - 外层光晕：`primary/20%` 模糊 blur-3xl，2s 循环脉冲缩放（1.0 → 1.1 → 1.0）
+
+3. **底部：提示文字（两行）**
+   - 主提示：`Release to send, Swipe up to cancel`，Manrope bold 18px，`onSurface` 色
+   - 副提示：`松开发送，上滑取消`，Inter uppercase，letter-spacing 2，`onSurfaceVariant` 60% 不透明度，12px
 
 **手势逻辑**：
 - 按下 → 请求录音权限 → 开始录音，显示浮层
