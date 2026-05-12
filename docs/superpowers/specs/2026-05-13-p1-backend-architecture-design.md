@@ -50,6 +50,30 @@ sanyan-server/                          ← 父 POM（dependencyManagement + Enf
 | `foundation_packages` 之间互依 | ✅（避免循环） |
 | `foundation_packages` → `business_packages` | ❌ 严禁 |
 
+**第一层守护：父 POM Enforcer**
+
+每个 foundation 子模块的 pom.xml 都加 `maven-enforcer-plugin` 的 `banned-dependencies` 规则：
+
+```xml
+<plugin>
+  <artifactId>maven-enforcer-plugin</artifactId>
+  <executions><execution>
+    <id>enforce-foundation-no-business-dependency</id>
+    <goals><goal>enforce</goal></goals>
+    <configuration><rules>
+      <bannedDependencies>
+        <excludes>
+          <exclude>com.sanyan:sanyan-business</exclude>
+        </excludes>
+      </bannedDependencies>
+    </rules></configuration>
+  </execution></executions>
+</plugin>
+```
+
+违规时 `mvn validate` 阶段直接失败，比 ArchUnit 测试阶段更早拦住。
+**第二层守护**（ArchUnit）见 §5。
+
 ### 2.3 业务模块内部 4 领域包
 
 ```
@@ -70,6 +94,15 @@ sanyan-business/src/main/java/com/sanyan/
 **跨领域调用规则**：
 - ✅ 任一领域的 `.internal` 可被同业务模块内其他领域 `.internal` 调用（如 `chat.internal` 调 `llm.internal.AiService`）
 - ❌ 不允许跨领域引用 `.web` / `.ws` 包（web/ws 是领域对外的入口，不应被同业务的其他领域绕过）
+
+**与规则 `java-backend-business-layer.md` §3.1 的已知偏差**：
+| 规则要求的子包 | 本 spec 状态 | 偏差来源 |
+|---|---|---|
+| `web/` | ✅ 有 | — |
+| `internal/` | ✅ 有 | — |
+| `ws/` | ✅ 有（WebSocket 业务特有，规则未列但 plan-1 已设计） | — |
+| `api/` | ❌ 无 | 衍生自"业务模块不拆 -api/-core"决策（§1.2） |
+| `event/` | ❌ 无 | P1 范围内无跨领域事件需求；未来某个 sub-plan 真要发事件时新增 `<领域>/event/` 子包，定义类和 Listener 都放那里 |
 
 ## 3. 核心组件
 
@@ -209,13 +242,27 @@ class ArchitectureTest {
 
 | M | 名称 | 工作量 | 验收 |
 |---|---|---|---|
-| M1 | Maven 骨架 | ~半天 | `mvn validate` 全过；`mvn package` 能产出 bootstrap.jar |
+| M1 | Maven 骨架 + Enforcer | ~半天 | `mvn validate` 全过（Enforcer 包含 banned-dependencies）；`mvn package` 能产出 bootstrap.jar |
 | M2 | foundation_packages 充实 | ~1 天 | foundation 自身单测全过 |
-| M3 | 业务代码按领域搬家 + 替换 IllegalArgumentException | **~1-2 天**（最大改动） | 现有 194 个测试全过；部署 dev 能起、能登录、能聊天 |
+| M3 | 业务代码搬家 + 命名/Service 规范化 + 测试搬家 | **~1-2 天**（最大改动） | 现有 194 个测试全过；部署 dev 能起、能登录、能聊天 |
 | M4 | Flyway 接管 | ~半天 | 服务器启动日志显示 baseline V1 + migrate to V2；schema 不变 |
 | M5 | ArchUnit 守护 | ~半天 | `mvn test` 包含 4 条 ArchUnit 测试且全过 |
 
 **每个 M 完成后 commit + 跑全量测试**。
+
+### 6.M3 详细子任务（按规则 `java-backend-business-layer.md` 对齐）
+
+| 子任务 | 内容 |
+|---|---|
+| **M3.1** 按领域搬家 | 现有 `com.sanyan.{controller,service,entity,repository,websocket,...}` → 按 §2.3 重组到 `com.sanyan.{user,character,chat,llm}.{web,ws,internal}`。测试代码**镜像 src/main 路径**同步搬家（如 `AuthServiceTest` 跟 `AuthService` 一起到 `com.sanyan.user.internal`） |
+| **M3.2** Entity 加 `Entity` 后缀 | `User → UserEntity`、`Message → MessageEntity`、`AiCharacter → AiCharacterEntity`。同时更新 Repository 泛型参数、所有引用点。**注意**：JPA `@Table(name=...)` 显式指定旧表名，避免 schema 变更 |
+| **M3.3** Service 按动作拆 | `AuthService` 现有的 register + login + SMS 多个动作拆成：`UserRegisterService` / `UserLoginService` / `SmsCodeSendService`（命名 `<Domain><Action>Service`）。每个 Service 方法 = 一个 `@Transactional` 边界 |
+| **M3.4** 替换异常 | 现有 `IllegalArgumentException` / `InvalidTokenException` 全部替换为 `BusinessException(具体 ErrCode)`（按 §3.4 映射表）。删除 `com.sanyan.exception.InvalidTokenException` 类 |
+| **M3.5** Controller 集成测试用 `*IT` 后缀 | 用 `@WebMvcTest` / `@SpringBootTest` 启动 Spring context 的测试改名：`AuthControllerTest → AuthControllerIT`、`RepositoryTest`（含 `@DataJpaTest` 部分）→ `*IT`。父 POM 配 surefire 跑 `*Test`、failsafe 跑 `*IT` |
+| **M3.6** 引入 `<Domain>TestFixtures` | 给每个 Entity 写一个 fixture 类（位置：`<domain>/internal/`，包路径在测试目录下镜像）：`UserTestFixtures` / `MessageTestFixtures` / `AiCharacterTestFixtures`。最低提供"默认有效对象"方法 `validXxx()`。现有测试里所有裸 `new UserEntity()` 等 entity 构造改用 fixture |
+| **M3.7** `ApiResponse → BaseResp` 改名 | 现有 `com.sanyan.dto.ApiResponse` 删，由 `common-web` 的 `BaseResp` 替换。所有 Controller 返回类型同步更新 |
+
+**M3 整体验收**：现有 194 测试全过、`mvn compile` + `mvn test` 双过、能跑通端到端 dogfood 路径。
 
 ## 7. 测试策略
 
@@ -244,12 +291,33 @@ class ArchitectureTest {
 
 ## 10. 验收标准
 
-- [ ] 10 个 Maven 子模块拓扑搭起来；`mvn validate` 通过 Enforcer 检查
+**架构层**
+- [ ] 10 个 Maven 子模块拓扑搭起来；`mvn validate` 通过 Enforcer 检查（含 banned-dependencies）
+- [ ] foundation_packages 8 个模块全部按规则 `java-backend-foundation-layer.md` 命名（`sanyan-common-<role>`）
+
+**命名规范**
+- [ ] 所有 Entity 类带 `Entity` 后缀（`UserEntity` / `MessageEntity` / `AiCharacterEntity`）
+- [ ] Service 按动作拆（`UserRegisterService` / `UserLoginService` / `SmsCodeSendService`）；不再有 `AuthService` 这种多动作聚合类
+- [ ] Controller 集成测试用 `*IT` 后缀；纯 Mockito 单测用 `*Test` 后缀
+
+**异常 + 响应**
 - [ ] 所有现有 `IllegalArgumentException` / `InvalidTokenException` 替换为 `BusinessException` + 对应 `ErrCode`
 - [ ] `BaseResp` 替换 `ApiResponse`；`GlobalExceptionHandler` 工作正常
-- [ ] Flyway 在本机 + 生产都成功 baseline + 跑 V2
+- [ ] `ErrCodeConflictDetector` 在启动时跑过、无冲突
+
+**测试基础设施**
+- [ ] 至少 3 个 `<Domain>TestFixtures` 类（User / Message / AiCharacter）建立；现有测试里裸 `new XxxEntity()` 已改用 fixture
+- [ ] 测试代码路径镜像 src/main（测试和被测代码在同一包路径下）
+
+**Flyway**
+- [ ] Flyway 在本机 + 生产都成功 baseline V1 + 跑 V2
+- [ ] schema 不变（前后 `pg_dump --schema-only` diff 为空）
+
+**ArchUnit**
 - [ ] 4 条 ArchUnit 规则全过
-- [ ] 现有 194 个测试全部通过；新增 ArchUnit 测试通过
+- [ ] 现有 194 个测试全部通过；新增 ArchUnit 测试通过（约 198 总数）
+
+**端到端**
 - [ ] dogfood 一遍：注册 → 登录 → 聊天 → 收到 AI 回复，端到端正常
 - [ ] 部署到 new 服务器，能正常服务
 
