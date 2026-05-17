@@ -189,9 +189,8 @@ com.sanyan.character/
 │   │   ├── PlotMilestoneEngine.java        # 注册器（Spring 自动收集所有 Rule Bean）
 │   │   ├── RelationshipMilestoneEntity.java
 │   │   ├── RelationshipMilestoneRepository.java
-│   │   ├── DeepNightChatRule.java          # 连续 3 晚 22-02 +50
-│   │   ├── FirstHonestShareRule.java       # 情感关键词首次命中 +30
-│   │   └── StageEntryCelebrationRule.java  # 监听 StageTransitionEvent → 触发剧情演出（不加分）
+│   │   ├── DeepNightChatRule.java          # 连续 3 晚 22-02 +50（PlotMilestoneRule 实现）
+│   │   └── FirstHonestShareRule.java       # 情感关键词首次命中 +30（PlotMilestoneRule 实现）
 │   └── stage/
 │       ├── StageDefinition.java            # enum 5 档（名/序号）；阈值来自 ConfigurationProperties
 │       ├── StageTransitionService.java     # 检测阶段切换 + 发事件
@@ -202,7 +201,8 @@ com.sanyan.character/
 ├── web/
 │   └── RelationshipController.java         # GET /api/relationships/me
 └── event/
-    └── MessagePersistedListener.java       # 订阅 chat-api 的 MessagePersistedEvent
+    ├── MessagePersistedListener.java       # 订阅 chat-api 的 MessagePersistedEvent
+    └── StageTransitionStoryListener.java   # 订阅自家 StageTransitionEvent → 拼 story_message（不加分；通过 IntimacyChangedEvent 元数据或单独事件下发给 chat-core WS）
 ```
 
 ### 3.3 sanyan-chat-core（仅 3 处接入）
@@ -243,7 +243,7 @@ public List<Map<String, String>> build(
 
 1. **[App]** 用户发消息 → WS frame
 2. **[chat-core · AiService]**
-   1. `characterApi.getStagePromptSegment(uid, cid)` → "当前关系：暧昧。称呼：宝。语调：撒娇..."
+   1. `relationshipApi.getStagePromptSegment(uid, cid)` → "当前关系：暧昧。称呼：宝。语调：撒娇..."（内部走 findOrCreate）
    2. `PromptBuilder.build(charPrompt, stagePromptSegment, memoryContext, recent)`
    3. LLM 调用 → 流式回写 WS
    4. `MessageService.persist(...)` → DB COMMIT → `publishEvent(MessagePersistedEvent)`
@@ -267,12 +267,13 @@ public List<Map<String, String>> build(
 
 ### 4.2 链路 B：首次登录涨分（轻量）
 
-触发点：`GET /api/relationships/me`（前端进聊天页时调）
+触发点：`GET /api/relationships/me`（前端进聊天页时调；接口内**日级幂等**——同日多次调用只首次涨分）
 
-1. `consecutiveLoginService.recordLogin(userId)` 比对 Redis last_date
+1. `relationshipApi.findOrCreate(userId, characterId)`（唯一懒创建入口；当日首次访问时建 relationship 行）
+2. `consecutiveLoginService.recordLogin(userId)` 比对 Redis last_date
    - 今天已记 → return streak（不涨分）
    - 今天首次 → streak++（或重置为 1） + 写 Redis → `intimacyService.recordEvent(DAILY_LOGIN, streak)` —— +10 + streak×5（封顶 +60）
-2. 接口返回 `RelationshipDto`
+3. 接口返回 `RelationshipDto`
 
 ### 4.3 关键守则
 
@@ -305,7 +306,7 @@ public List<Map<String, String>> build(
 | DAILY_LOGIN | 每日首次进聊天页 | +10 + streak × 5 | streak ≤ 10 → 最高 +60 |
 | PLOT:deep_night_chat | 连续 3 晚 22-02 都有聊 | +50 | 一次性（milestones 去重） |
 | PLOT:first_honest_share | 首次深度分享（情感关键词） | +30 | 一次性 |
-| PLOT:stage_entry_N | 每次首次进入新阶段 | 0（仅剧情演出） | 每阶段一次性 |
+| STORY:stage_entry_N | 每次首次进入新阶段（由 StageTransitionStoryListener 处理，不走 plotEngine） | 0（仅剧情演出 / WS story_message 推送） | 每阶段一次性（relationship_milestones 去重） |
 | AI_QUALITY_BONUS | 每 10 条用户消息 → V4-Flash 评估 | +0 ~ +20 | 单次 ≤ 20 |
 
 ### 5.3 参数化（application.yml）
@@ -323,9 +324,9 @@ sanyan:
     delta:
       messageSent: 1
       messageDailyCap: 50
-      dailyLogin: 10
-      streakBonusPerDay: 5
-      streakBonusCap: 50
+      dailyLogin: 10           # 基础分（每日首次登录无条件给）
+      streakBonusPerDay: 5     # 每多 1 天连续登录额外加的分
+      streakBonusCap: 50       # streak 部分的封顶（不含基础分）；整体最高 = dailyLogin + streakBonusCap = +60
     rules:
       deepNightChat: 50
       firstHonestShare: 30
