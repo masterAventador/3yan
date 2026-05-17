@@ -82,15 +82,15 @@
 
 ## 系统稳定性观察
 
-### embedding service 稳定性（部署在 old）
-- [ ] systemd 重启次数：`systemctl status sanyan-embedding` 看 `Active: active (running) since ...`，没有反复 Restart
-- [ ] 平均响应延迟（看 `/var/log/sanyan-embedding/server.log` 里 `latency_ms`）：____________
-- [ ] OOM / 卡顿事件：____________
+> **2026-05-17 变更**：自建 BGE-M3 服务（原部署在 old）已下线，向量化改用硅基流动 API（`POST https://api.siliconflow.cn/v1/embeddings`，模型 `BAAI/bge-m3`，免费）。原"old 服务器资源水位""embedding service 稳定性"两节已废弃，替换为下面的"硅基流动 API 用量"。
 
-### old 服务器资源水位
-- [ ] `free -h` 物理内存 used / available：____________
-- [ ] swap 使用量：____________
-- [ ] 是否需要升级 old 内存 / 优化 JVM heap：____________
+### 硅基流动 API 用量与稳定性
+- [ ] 一周累计调用次数（看 https://cloud.siliconflow.cn/ 控制台用量统计）：____________
+- [ ] 一周累计 token 用量（input-tokens 应该都是 0 费用）：____________
+- [ ] 4xx 错误次数（`grep "SiliconFlow 4xx" /opt/3yan/3yan-server/server.log | wc -l`）：____________
+- [ ] 5xx + 网络异常次数（`grep "SiliconFlow embedding attempt" /opt/3yan/3yan-server/server.log | wc -l`）：____________
+- [ ] 平均 RAG 检索延迟（首段 embedding 单调用 + DB 检索，看 `[RAG_SEARCH]` 关键字）：____________
+- [ ] 是否触发限流（L0 等级：2000 RPM / 500000 TPM）：____________
 
 ### Redis Streams 索引队列
 - [ ] `redis-cli XLEN sanyan:memory:rag:index-queue` 长期 < 10（健康）还是堆积：____________
