@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Plan 2 长期记忆测试指南</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #fff;
+    --text: #222;
+    --muted: #6a6a6a;
+    --border: #e3e3e3;
+    --accent: #5b6cf6;
+    --accent-soft: #eef0fe;
+    --code-bg: #1e1e2e;
+    --code-text: #f5f5f7;
+    --green: #20a070;
+    --orange: #d48400;
+    --red: #d04646;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 48px 96px;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+  }
+  h1 + .subtitle {
+    color: var(--muted);
+    margin-bottom: 36px;
+    font-size: 14px;
+  }
+  h2 {
+    font-size: 19px;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 14px;
+    margin: 16px 0 8px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .quick {
+    background: linear-gradient(135deg, #5b6cf6 0%, #7c83f4 100%);
+    color: white;
+    border: none;
+  }
+  .quick h2 { color: white; }
+  .quick .num { background: rgba(255,255,255,0.25); color: white; }
+  .quick p { margin: 8px 0 16px; opacity: 0.95; font-size: 14px; }
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: 8px;
+  }
+  .pill.green { background: #def4e7; color: var(--green); }
+  .pill.orange { background: #fdf0d6; color: var(--orange); }
+  .pill.red { background: #fadede; color: var(--red); }
+  .pill.blue { background: #e0e6fd; color: var(--accent); }
+  .trigger {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .trigger b { color: var(--accent); }
+  .step {
+    margin: 8px 0;
+    padding-left: 24px;
+    position: relative;
+    font-size: 14.5px;
+  }
+  .step::before {
+    content: "•";
+    position: absolute;
+    left: 8px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
+    margin: 8px 0 4px;
+    line-height: 1.55;
+    position: relative;
+  }
+  .code-wrap {
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.1);
+    color: var(--code-text);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: -apple-system, sans-serif;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copy-btn.copied {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .expect {
+    background: #f4faf6;
+    border: 1px solid #d4ebde;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .expect::before {
+    content: "✓ 预期：";
+    color: var(--green);
+    font-weight: 600;
+  }
+  .meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--muted);
+    margin: 12px 0 16px;
+  }
+  .meta b { color: var(--text); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: #f5f5f7;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  code.inline {
+    background: #f0f0f4;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", monospace;
+    font-size: 13px;
+    color: #5b3a90;
+  }
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .toc {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+  }
+  .toc ol { margin: 8px 0 0; padding-left: 20px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h1>Plan 2 长期记忆测试指南</h1>
+<div class="subtitle">三言 / 小婉 · 自我 dogfood checklist · 部署完成日 2026-05-15</div>
+
+<div class="toc">
+  <b style="font-size:13px;color:var(--muted)">目录</b>
+  <ol>
+    <li><a href="#monitor">实时监控（一边聊一边看）</a></li>
+    <li><a href="#t1">测试 1 · profile 抽取（最快验收）</a></li>
+    <li><a href="#t2">测试 2 · summary 生成（30 条触发）</a></li>
+    <li><a href="#t3">测试 3 · RAG 检索（隔天再问旧事）</a></li>
+    <li><a href="#t4">测试 4 · 降级（embedding 服务挂时不影响聊天）</a></li>
+    <li><a href="#path">最短验收路径</a></li>
+    <li><a href="#ref">查询命令小抄</a></li>
+  </ol>
+</div>
+
+<!-- 实时监控 -->
+<div class="card quick" id="monitor">
+  <h2><span class="num">0</span>实时监控（一边聊一边看）</h2>
+  <p>把这个一直跑在另一个终端窗口，所有 memory 相关操作都会刷过来：</p>
+  <div class="code-wrap">
+    <pre>ssh new 'journalctl -u 3yan-server -f | grep -iE "memory|embedding|profile|summary|rag|deepseek"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+</div>
+
+<!-- 测试 1: Profile -->
+<div class="card" id="t1">
+  <h2><span class="num">1</span>profile 抽取（最快验收）</h2>
+  <div class="meta">
+    <span><b>耗时</b> 1-2 分钟</span>
+    <span><b>依赖</b> DEEPSEEK_API_KEY 有效</span>
+    <span class="pill green">已配置</span>
+  </div>
+
+  <div class="trigger">
+    <b>触发条件：</b>用户每发一条消息 + 距上次抽取 ≥ 5 分钟（Redis NX 节流）
+  </div>
+
+  <h3>操作步骤</h3>
+  <div class="step">跟小婉聊一句：<code class="inline">我家有只猫叫橘子，我是个前端工程师，住在北京</code></div>
+  <div class="step">等 5-10 秒（@Async + LLM 调用时间）</div>
+  <div class="step">查数据库验证 profile_jsonb 是否被填充</div>
+
+  <h3>验证 SQL</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT user_id, character_id, profile_jsonb FROM memory_profiles;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <div class="expect">
+<code class="inline">profile_jsonb.events</code> 数组里含 "猫" / "橘子"<br>
+<code class="inline">profile_jsonb.basic_info.occupation</code> = "前端工程师"<br>
+<code class="inline">profile_jsonb.basic_info.hometown</code> = "北京"
+  </div>
+
+  <h3>失败排查</h3>
+  <div class="step">看 log 有没有 <code class="inline">ProfileExtract</code> / <code class="inline">节流</code> 关键字</div>
+  <div class="step">如果一直没记录：DEEPSEEK_API_KEY 是否真的生效（看 log 有没有 4xx）</div>
+  <div class="step">5 分钟内重发不会再触发（节流），需要等过 5 分钟或者重启清 Redis key</div>
+</div>
+
+<!-- 测试 2: Summary -->
+<div class="card" id="t2">
+  <h2><span class="num">2</span>summary 生成（30 条触发）</h2>
+  <div class="meta">
+    <span><b>耗时</b> 10-30 分钟</span>
+    <span><b>依赖</b> DEEPSEEK_API_KEY + 聊够 30 条消息</span>
+    <span class="pill orange">需要量</span>
+  </div>
+
+  <div class="trigger">
+    <b>触发条件：</b>自上次摘要以来累积新消息 ≥ <code class="inline">SUMMARY_TRIGGER_THRESHOLD</code> (= 30)<br>
+    第 30 条消息持久化后，<code class="inline">SummaryScheduler</code> 异步触发
+  </div>
+
+  <h3>操作步骤</h3>
+  <div class="step">跟小婉来回聊 30+ 条（你的话 + AI 的话各算一条，大约 15 轮对话）</div>
+  <div class="step">第 30 条消息落库后等几秒</div>
+  <div class="step">查 memory_summaries 表</div>
+
+  <h3>验证 SQL</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT id, user_id, character_id, message_count, LEFT(summary_text, 80) as preview, created_at FROM memory_summaries ORDER BY id DESC LIMIT 3;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <div class="expect">
+新增一条 summary 记录<br>
+<code class="inline">summary_text</code> 是 100-200 字中文纪要<br>
+<code class="inline">message_count</code> ≈ 30
+  </div>
+
+  <h3>失败排查</h3>
+  <div class="step">数当前消息数：<code class="inline">SELECT count(*) FROM message WHERE user_id = 1;</code></div>
+  <div class="step">看 log 关键字：<code class="inline">grep "Summary"</code></div>
+  <div class="step">如果攒够 30 但没 summary：检查 DeepSeek 4xx / 网络</div>
+</div>
+
+<!-- 测试 3: RAG -->
+<div class="card" id="t3">
+  <h2><span class="num">3</span>RAG 检索（隔天再问旧事）</h2>
+  <div class="meta">
+    <span><b>耗时</b> 当天可观测索引落库，但效果最好隔几天再问</span>
+    <span><b>依赖</b> embedding 服务（已在 old 上跑） + 累积历史</span>
+    <span class="pill blue">最体现"长期"</span>
+  </div>
+
+  <div class="trigger">
+    <b>触发条件：</b>每 5-10 条消息 → ChunkBuilder 切片 → embedding 服务拿向量 → 存 <code class="inline">chat_embeddings</code><br>
+    用户新提问时 → embed query → pgvector cosine Top 5 (cos sim &gt; 0.6)
+  </div>
+
+  <h3>操作步骤 - 第一阶段：累积</h3>
+  <div class="step">持续聊 10+ 条消息（多个话题）</div>
+  <div class="step">验证 chunks 已索引：</div>
+
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT id, user_id, array_length(message_ids, 1) as msg_count, LEFT(chunk_text, 60) as preview FROM chat_embeddings ORDER BY id DESC LIMIT 5;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <div class="expect">
+有 1+ 条 <code class="inline">chat_embeddings</code> 记录<br>
+<code class="inline">msg_count</code> 在 5-10 之间<br>
+<code class="inline">preview</code> 是中文聊天内容
+  </div>
+
+  <h3>操作步骤 - 第二阶段：召回</h3>
+  <div class="step">隔几小时或第二天，问指向之前内容的问题</div>
+  <div class="step">例：之前提过猫，现在问 <code class="inline">上次说的那只猫叫什么来着</code></div>
+  <div class="step">看小婉是不是能从历史里捞回名字</div>
+
+  <h3>查看 RAG 调用日志</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'journalctl -u 3yan-server -n 200 --no-pager | grep -E "RagSearch|MemoryContext|embed"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+</div>
+
+<!-- 测试 4: 降级 -->
+<div class="card" id="t4">
+  <h2><span class="num">4</span>降级（embedding 服务挂时不影响聊天）</h2>
+  <div class="meta">
+    <span><b>耗时</b> 5 分钟</span>
+    <span><b>依赖</b> 主聊天 + embedding 服务都跑着</span>
+    <span class="pill red">破坏性测试</span>
+  </div>
+
+  <div class="trigger">
+    <b>验收点：</b>embedding 服务挂掉时，主聊天必须照常工作（RAG 段在 prompt 里直接跳过）
+  </div>
+
+  <h3>操作步骤</h3>
+  <div class="step">停 embedding 服务（模拟挂掉）：</div>
+
+  <div class="code-wrap">
+    <pre>ssh old 'systemctl stop sanyan-embedding'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <div class="step">用 app 正常跟小婉聊几句</div>
+
+  <div class="expect">
+主聊天照常返回（豆包还能调）<br>
+log 里看到 <code class="inline">Embedding 服务不可用，RAG 降级返回空列表</code><br>
+主线程不抛 BusinessException
+  </div>
+
+  <h3>恢复 embedding 服务</h3>
+  <div class="code-wrap">
+    <pre>ssh old 'systemctl start sanyan-embedding'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+</div>
+
+<!-- 最短路径 -->
+<div class="card" id="path">
+  <h2><span class="num">⚡</span>最短验收路径</h2>
+  <table>
+    <tr><th>顺序</th><th>动作</th><th>预期</th></tr>
+    <tr>
+      <td>1</td>
+      <td>开监控终端（顶部命令）</td>
+      <td>看到日志在 tail</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>聊一句含个人信息（e.g. "我家有只猫叫橘子"）</td>
+      <td>10 秒内 log 出现 ProfileExtract</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>查 memory_profiles 表</td>
+      <td>events 含"橘子"</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>聊够 30 条</td>
+      <td>memory_summaries 多 1 条</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>查 chat_embeddings 表</td>
+      <td>看到 chunks 入库</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>隔半天或一天后问"上次说的橘子是什么品种"</td>
+      <td>小婉答得出（验证 RAG 召回）</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 查询小抄 -->
+<div class="card" id="ref">
+  <h2><span class="num">📋</span>查询命令小抄</h2>
+
+  <h3>看消息表</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT id, user_id, sender_type, LEFT(content, 40) as preview, created_at FROM message ORDER BY id DESC LIMIT 10;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>看 profile</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT user_id, jsonb_pretty(profile_jsonb) FROM memory_profiles;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>看 summary</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT id, message_count, summary_text, created_at FROM memory_summaries ORDER BY id DESC;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>看 RAG chunks</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'sudo -u postgres psql -d sanyan -c "SELECT id, user_id, array_length(message_ids, 1) as cnt, LEFT(chunk_text, 80) FROM chat_embeddings ORDER BY id DESC LIMIT 10;"'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>看 Redis 队列堆积</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'redis-cli XLEN sanyan:memory:rag:index-queue'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>看 DLQ 日志</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'journalctl -u 3yan-server | grep RAG_INDEX_DLQ'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>embedding 服务健康检查</h3>
+  <div class="code-wrap">
+    <pre>ssh old 'curl -s http://localhost:8080/actuator/health'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+
+  <h3>清 profile 节流 key（让 5 分钟节流失效，方便连续测）</h3>
+  <div class="code-wrap">
+    <pre>ssh new 'redis-cli --scan --pattern "sanyan:memory:profile:throttle:*" | xargs -r redis-cli del'</pre>
+    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+  </div>
+</div>
+
+<div class="footer">
+Plan 2 长期记忆系统 · 共 30 个 task · 389 个测试通过 · 实施日 2026-05-14~15<br>
+配套文档：<code class="inline">docs/superpowers/plans/2026-05-06-3yan-plan-2-long-term-memory.md</code>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '已复制';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '复制';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+
+</body>
+</html>
