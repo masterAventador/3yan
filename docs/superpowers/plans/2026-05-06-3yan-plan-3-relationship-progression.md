@@ -17,7 +17,7 @@
   - 行为分：消息(+1，每日封顶 50) + 每日首次登录(+10 + streak×5，封顶 +60)
   - 剧情节点：DeepNightChatRule(+50) / FirstHonestShareRule(+30) / StageEntryCelebrationRule（仅剧情演出，不加分）
   - AI 评估：ConversationQualityEvaluator 调 DeepSeek V4-Flash，每 10 条用户消息 +0~+20
-- **称呼/语调动态**：每个 stage 在 `character.persona_config.stage_overrides` 里有 `address` / `tone_hint` / `topics_unlock`；StageOverrideService 取出 → 拼成 stage prompt segment 文本 → 由 chat-core AiService 传给 PromptBuilder
+- **称呼/语调动态**：每个 stage 在 `character.persona_config.stage_overrides` 里有 `address` / `tone_hint` / `topics_unlock`；`StageOverrideQueryService` 取出 → 拼成 stage prompt segment 文本 → 由 chat-core AiService 传给 PromptBuilder
 - **进度 UI**：聊天页顶部 IntimacyProgressBar 显示当前阶段 + 距下一阶段进度；阶段切换 StageTransitionDialog 弹窗
 
 **与旧版 spec 的关键差异（brainstorm 2026-05-18 校准）：**
@@ -126,8 +126,7 @@ V6__seed_xiaowan_persona.sql                -- UPDATE ai_character SET base_prom
 
 ```
 com.sanyan.character/
-├── CharacterApi.java                       # 已有
-├── RelationshipApi.java                    # 新增 — findOrCreate / getStagePromptSegment
+├── CharacterApi.java                       # 已有 — 扩充：新增 4 个 relationship 相关方法
 ├── dto/
 │   ├── AiCharacterDto.java                 # 已有
 │   └── RelationshipDto.java                # 新增
@@ -136,16 +135,27 @@ com.sanyan.character/
     └── StageTransitionEvent.java           # 新增 (record)
 ```
 
-`RelationshipApi` 草签：
-```java
-public interface RelationshipApi {
-    RelationshipDto findOrCreate(Long userId, Long characterId);
+> **架构决策**：按 `java-backend-business-layer.md §2.2`「一个 -api 只有一个主 `<Domain>Api` 接口」，
+> Relationship 是 character 域的内嵌从属概念（user × character 之间的状态），关系操作合并进 `CharacterApi`，
+> **不**新建 `RelationshipApi`。如果未来 relationship 业务膨胀（如多角色 / 关系网 / 跨域查询）再考虑拆 `sanyan-relationship` 独立模块。
 
-    /** 返回拼好的 stage prompt 片段，供 chat-core 注入到 system 消息。
-     *  示例返回："当前关系阶段：暧昧。称呼用户用：宝。语调：撒娇、试探、害羞。" */
+`CharacterApi` 新签名（已有 + 新增）：
+```java
+public interface CharacterApi {
+    /* —— 已有 —— */
+    AiCharacterDto findById(Long characterId);                          // 不存在返回 null
+    AiCharacterDto getById(Long characterId);                           // 不存在抛 BusinessException
+
+    /* —— 新增（Plan 3） —— */
+    RelationshipDto findOrCreateRelationship(Long userId, Long characterId);   // 唯一懒创建入口
+    RelationshipDto fetchMyRelationship(Long userId, Long characterId);        // GET /me 编排：findOrCreate + recordLogin + DTO
+    /** 拼好的 stage prompt 片段，供 chat-core 注入 system 消息。
+     *  示例："当前关系阶段：暧昧。称呼用户用：宝。语调：撒娇、试探、害羞。" */
     String getStagePromptSegment(Long userId, Long characterId);
 }
 ```
+
+> `IntimacyEvent` 是 character-core 内部 record，**不暴露**到 -api；character-core 内部 listener / engine 直接调 `internal/intimacy/IntimacyRecordService` 即可。
 
 `RelationshipDto`：
 ```java
@@ -171,13 +181,15 @@ com.sanyan.character/
 ├── internal/
 │   ├── AiCharacterEntity.java              # 已有 — 增 basePrompt + personaConfig 字段
 │   ├── AiCharacterRepository.java          # 已有
-│   ├── CharacterErrCode.java               # 已有 — 增 RELATIONSHIP_NOT_FOUND 等
+│   ├── CharacterErrCode.java               # 已有 — 增 3002 RELATIONSHIP_NOT_FOUND / 3003 INTIMACY_CONCURRENT_UPDATE
 │   ├── RelationshipEntity.java             # 新增（@IdClass 复合 PK + @Version）
 │   ├── RelationshipRepository.java         # 新增
+│   ├── RelationshipFindOrCreateService.java # 新增 — 唯一懒创建入口；事务 + 并发安全
+│   ├── RelationshipFetchService.java       # 新增 — 编排 GET /me：findOrCreate + recordLogin + 拼 DTO
 │   ├── intimacy/
-│   │   ├── IntimacyEvent.java              # record (type, payload)
+│   │   ├── IntimacyEvent.java              # record (type, payload)；internal 不出 -api
 │   │   ├── IntimacyCalculator.java
-│   │   ├── IntimacyService.java            # 累加 + 阶段切换 + 事件
+│   │   ├── IntimacyRecordService.java      # 累加 + 阶段切换 + 事件（按动作命名）
 │   │   ├── IntimacyLogEntity.java
 │   │   ├── IntimacyLogRepository.java
 │   │   ├── DailyBehaviorCounter.java       # Redis
@@ -193,13 +205,12 @@ com.sanyan.character/
 │   │   └── FirstHonestShareRule.java       # 情感关键词首次命中 +30（PlotMilestoneRule 实现）
 │   └── stage/
 │       ├── StageDefinition.java            # enum 5 档（名/序号）；阈值来自 ConfigurationProperties
-│       ├── StageTransitionService.java     # 检测阶段切换 + 发事件
-│       └── StageOverrideService.java       # 读 persona_config.stage_overrides → 拼 prompt 段
+│       ├── StageTransitionDetectService.java   # 检测阶段切换 + 发事件
+│       └── StageOverrideQueryService.java  # 读 persona_config.stage_overrides → 拼 prompt 段
 ├── api/
-│   ├── CharacterApiImpl.java               # 已有
-│   └── RelationshipApiImpl.java            # 新增
+│   └── CharacterApiImpl.java               # 已有 — 扩充 4 个 relationship 方法（薄委托 internal Service）
 ├── web/
-│   └── RelationshipController.java         # GET /api/relationships/me
+│   └── RelationshipController.java         # GET /api/relationships/me — 薄壳，调 CharacterApi.fetchMyRelationship
 └── event/
     ├── MessagePersistedListener.java       # 订阅 chat-api 的 MessagePersistedEvent
     └── StageTransitionStoryListener.java   # 订阅自家 StageTransitionEvent → 拼 story_message（不加分；通过 IntimacyChangedEvent 元数据或单独事件下发给 chat-core WS）
@@ -209,7 +220,7 @@ com.sanyan.character/
 
 ```
 internal/PromptBuilder.java         # build 多 stagePromptSegment 参数
-internal/AiService.java             # 调 RelationshipApi.getStagePromptSegment 拼好传入
+internal/AiService.java             # 调 CharacterApi.getStagePromptSegment 拼好传入
 ws/ChatWebSocketHandler.java        # 监听 IntimacyChangedEvent / StageTransitionEvent → WS 推送
 ```
 
@@ -228,12 +239,26 @@ public List<Map<String, String>> build(
 3. system: 「她对你的记忆：\n」+ `memoryContext.text()` —— 非 blank 时
 4. 短期上下文消息（尾部 32 条）
 
-### 3.4 跨模块边界守则
+### 3.4 跨模块边界守则 + pom 依赖
 
 - character-core **订阅** chat-api 的 `MessagePersistedEvent`（已存在，Plan 2 N3 加的）
-- chat-core **调用** character-api 的 `RelationshipApi.getStagePromptSegment`（拿字符串，不引入 Relationship 类型依赖）
+  → **新增依赖**：`sanyan-character-core/pom.xml` 加 `<dependency>sanyan-chat-api</dependency>`
+- chat-core **调用** character-api 的 `CharacterApi.getStagePromptSegment`（拿字符串，不引入 Relationship 类型依赖）
+  → chat-core 已经依赖 character-api（Plan 2 注入 characterPrompt 时已加），**无需新增**
 - chat-core **订阅** character-api 的 `IntimacyChangedEvent / StageTransitionEvent` → WS 推送
-- 双向依赖通过 event + API 解耦，符合 java-backend.md 跨模块通信规则
+  → 依赖关系同上
+- 双向依赖通过 event + API 解耦，符合 `java-backend.md §4` 跨模块通信规则
+- Maven Enforcer `banned-dependencies` 守护：禁止 `-core` 互依
+
+### 3.5 错误码与配套 docs 同步
+
+- 新增错误码沿用 character 域既有区间 **3000-3999**（当前已占 3001 `CHARACTER_NOT_FOUND`）
+  - **3002** `RELATIONSHIP_NOT_FOUND` —— 调用 `getById` 类强约束方法但 relationship 不存在
+  - **3003** `INTIMACY_CONCURRENT_UPDATE` —— 乐观锁 retry 3 次仍失败
+- **必须同步更新** `foundation_packages/sanyan-common-error/ERROR_CODE_REGISTRY.md`：
+  - "CharacterErrCode（3000-3999）" 表内增加 3002 / 3003 两行
+  - 历史变更附一行：「2026-05-18 Plan 3：character 域新增 3002 / 3003」
+- 启动时 `ErrCodeConflictDetector` 自动扫描；冲突即启动失败
 
 ---
 
@@ -243,19 +268,19 @@ public List<Map<String, String>> build(
 
 1. **[App]** 用户发消息 → WS frame
 2. **[chat-core · AiService]**
-   1. `relationshipApi.getStagePromptSegment(uid, cid)` → "当前关系：暧昧。称呼：宝。语调：撒娇..."（内部走 findOrCreate）
+   1. `characterApi.getStagePromptSegment(uid, cid)` → "当前关系：暧昧。称呼：宝。语调：撒娇..."（内部走 RelationshipFindOrCreateService）
    2. `PromptBuilder.build(charPrompt, stagePromptSegment, memoryContext, recent)`
    3. LLM 调用 → 流式回写 WS
    4. `MessageService.persist(...)` → DB COMMIT → `publishEvent(MessagePersistedEvent)`
 3. **[character-core · MessagePersistedListener]**（`@TransactionalEventListener(phase = AFTER_COMMIT)` + `@Async`）
-   - `intimacyService.recordEvent(MESSAGE_SENT)` —— +1 ~ +10（受每日封顶限）
-   - `plotEngine.evaluate(context)` → 0..N rule 命中 → `recordEvent(PLOT_MILESTONE, +30~+100)`
-   - 累计每 10 条用户消息 → `evaluator.score()` → `recordEvent(AI_QUALITY_BONUS, 0~20)`
-4. **[character-core · IntimacyService.recordEvent]**
+   - `intimacyRecordService.recordEvent(MESSAGE_SENT)` —— +1 ~ +10（受每日封顶限）
+   - `plotEngine.evaluate(context)` → 0..N rule 命中 → `intimacyRecordService.recordEvent(PLOT_MILESTONE, +30~+100)`
+   - 累计每 10 条用户消息 → `evaluator.score()` → `intimacyRecordService.recordEvent(AI_QUALITY_BONUS, 0~20)`
+4. **[character-core · IntimacyRecordService.recordEvent]**
    1. `calculator.compute(event)` → delta
    2. `UPDATE relationships SET intimacy_score+=delta WHERE ... AND version=?`（乐观锁，retry 3 次）
    3. `INSERT INTO intimacy_logs ...`
-   4. `stageTransitionService.maybeTransition(rel, newScore)`
+   4. `stageTransitionDetectService.maybeTransition(rel, newScore)`
       - 跨阶段？→ UPDATE current_stage + `publishEvent(StageTransitionEvent)`
    5. `publishEvent(IntimacyChangedEvent)`
 5. **[chat-core · ChatWebSocketHandler 事件监听]**
@@ -269,11 +294,13 @@ public List<Map<String, String>> build(
 
 触发点：`GET /api/relationships/me`（前端进聊天页时调；接口内**日级幂等**——同日多次调用只首次涨分）
 
-1. `relationshipApi.findOrCreate(userId, characterId)`（唯一懒创建入口；当日首次访问时建 relationship 行）
+**Controller → ApiImpl → RelationshipFetchService.fetchMyRelationship(uid, cid)** 内部编排：
+
+1. `relationshipFindOrCreateService.findOrCreate(uid, cid)`（唯一懒创建入口；当日首次访问时建 relationship 行）
 2. `consecutiveLoginService.recordLogin(userId)` 比对 Redis last_date
    - 今天已记 → return streak（不涨分）
-   - 今天首次 → streak++（或重置为 1） + 写 Redis → `intimacyService.recordEvent(DAILY_LOGIN, streak)` —— +10 + streak×5（封顶 +60）
-3. 接口返回 `RelationshipDto`
+   - 今天首次 → streak++（或重置为 1） + 写 Redis → `intimacyRecordService.recordEvent(DAILY_LOGIN, streak)` —— +10 + streak×5（封顶 +60）
+3. 拼 `RelationshipDto` 返回（intimacy_score / current_stage / next_threshold / percent）
 
 ### 4.3 关键守则
 
@@ -356,14 +383,18 @@ sanyan:
 ```
 business_packages/sanyan_chat/lib/src/
 ├── api/
-│   ├── models/relationship.dart            # 新增
-│   └── reqs/relationship_req.dart          # 新增 — fetchMyRelationship + 解析 ws frame
+│   ├── sanyan_chat_api.dart                # 修改 — 加 fetchMyRelationship 方法（聚合入口）
+│   ├── models/relationship.dart            # 新增 — 跨接口复用的领域模型
+│   └── req/relationship_req.dart           # 新增 — RelationshipReq + RelationshipData
 └── chat/
     ├── widgets/
     │   ├── intimacy_progress_bar.dart      # 顶部进度条
     │   └── stage_transition_dialog.dart    # 阶段切换庆祝弹窗
     └── chat_controller.dart                # 修改 — 监听 ws intimacy_update / stage_transition
 ```
+
+> 命名约束：按 `flutter-business-layer.md §6`，请求/响应类同文件放（`RelationshipReq` + `RelationshipData`），目录用单数 `req/`；
+> `Relationship` 模型本身跨接口（HTTP `/me` 响应 + ws `intimacy_update` 推送都用），所以放 `models/` 而非 `req/`。
 
 ### 6.2 IntimacyProgressBar 行为
 
@@ -385,11 +416,12 @@ business_packages/sanyan_chat/lib/src/
 
 ### 7.1 单测（*Test, Mockito）
 
-- **intimacy/**：`IntimacyCalculatorTest`（6 种 type × 边界） / `IntimacyServiceTest`（累加 / 乐观锁 retry / 跨阶段 / cap 命中 delta=0 但仍写 log）
-- **stage/**：`StageDefinitionTest`（0/99/100/300/600/1000 边界） / `StageTransitionServiceTest` / `StageOverrideServiceTest`（persona_config 解析）
+- **intimacy/**：`IntimacyCalculatorTest`（6 种 type × 边界） / `IntimacyRecordServiceTest`（累加 / 乐观锁 retry / 跨阶段 / cap 命中 delta=0 但仍写 log）
+- **stage/**：`StageDefinitionTest`（0/99/100/300/600/1000 边界） / `StageTransitionDetectServiceTest` / `StageOverrideQueryServiceTest`（persona_config 解析）
 - **plotrule/**：每个 rule 一个 Test（覆盖触发 / 不触发 / 去重） + `PlotMilestoneEngineTest`
 - **intimacy/ai/**：`ConversationQualityEvaluatorTest`（LLM fake JSON 解析）
-- **event/**：`MessagePersistedListenerTest`（链路 mock）
+- **event/**：`MessagePersistedListenerTest`（链路 mock） / `StageTransitionStoryListenerTest`
+- **internal/**：`RelationshipFindOrCreateServiceTest`（懒创建并发） / `RelationshipFetchServiceTest`（编排 mock）
 
 ### 7.2 集成测试（*IT）
 
@@ -404,6 +436,17 @@ business_packages/sanyan_chat/lib/src/
 - `stage_transition_dialog_test.dart`（动画 + 文案）
 - `chat_controller_intimacy_test.dart`（收到 ws frame 后 Rx 更新）
 - `relationship_req_test.dart`（GET /me 解析）
+- **更新 `test/sanyan_chat_suite.dart`**：把以上 4 个测试 import 进聚合入口（按 `flutter-business-layer.md §10` 强制要求）
+
+### 7.x Object Mother（强制 · 按 `java-backend-business-layer.md §5.2`）
+
+新建 Entity 必须有对应 Fixture，放 `sanyan-character-core/src/test/java/com/sanyan/character/internal/fixtures/`：
+
+- `RelationshipTestFixtures.java`：`validRelationship(uid, cid)` / `relationshipWithScore(score)` / `relationshipAtStage(stage)`
+- `IntimacyLogTestFixtures.java`：`validLog(uid, cid, reason, delta)`
+- `RelationshipMilestoneTestFixtures.java`：`validMilestone(uid, cid, ruleId)`
+
+已有 `AiCharacterTestFixtures` 增 `withPersonaConfig(...)` 工厂方法支持 Plan 3 字段。
 
 ### 7.4 测试粒度（按 CLAUDE.md「Superpowers Task 测试粒度规范」）
 
