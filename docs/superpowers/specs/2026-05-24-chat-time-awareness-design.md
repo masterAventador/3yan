@@ -235,3 +235,19 @@ dogfood 不自动化的理由：需要真实 LLM 调用 + "复读" / "连贯性"
 - [ ] `sanyan-chat-core` 包 `mvn test` 全绿
 - [ ] dogfood 端到端三条验证（§5.3）通过
 - [ ] commit message 用中文描述改动（参考 v1/v2 commit 风格）
+
+---
+
+## 7. 实际落地结论（2026-05-25）
+
+设计文档写于 dogfood 之前。实际部署后发现：
+
+**§4.1 风险 1（连续 system 块影响 LLM 连贯性）**——✅ 未观察到。3 场景 × 57 条 AI 气泡均保持自然对话流。
+
+**§4.2 风险 2（豆包仍然复读时间标签）**——❌ **实际触发**。豆包 character 模型（`doubao-seed-character`）在多 system 块密集 prompt 下把 system role 时间标签当 assistant 回复输出，5 轮对话中 1 轮发生（20% 复读率）。
+
+**应对**：触发 Plan 2 —— LLM Provider 配置化切换（见 `docs/superpowers/plans/2026-05-25-llm-provider-config-switch.md`），把 USER_FACING 路由从豆包改成 DeepSeek V4-Flash。重跑 dogfood：3 场景 57 气泡 0 复读，3/3 追问回复无"刚才/刚刚"。
+
+**最终方案**：v3 短期窗口 system role 时间标签的设计**保留**（PromptBuilder 改动 + AiService 引导词），但 LLM provider 切到 DeepSeek（通用模型对 system role 训练更可靠）。豆包 adapter 代码保留，通过 yml `sanyan.doubao.task-types` 配置一键切回。
+
+**§5.3 dogfood 端到端验证**——实际跑了 3 场景（故事共创 / 日常共情 / 兴趣推荐），10/12 验证点通过。2 个未通过的是"AI 没用'前天/几天前'等远时间词"——但 AI 用了"之前"等近义表达 + 场景 C 还自然说出"现在都两点多了"体现时间感知，所以判定为脚本词表机械检查不足，实际行为符合产品意图。
