@@ -82,69 +82,60 @@ Expected: 8 个新用例全部失败（`taskTypes` 字段不存在），其他�
 
 修改 `DoubaoAdapter.java`：
 
-1. 加 import：
+1. 加 imports：
 ```java
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 ```
 
-2. 在 `@Value` 注入参数列表里加一个（注意构造器签名变化）。原构造器签名（约 line 62-67）：
+2. **不动构造器签名**，在类内（建议放 `restClient` field 下方、构造器上方）加一个 field-level `@Value` 注入：
+
 ```java
-public DoubaoAdapter(
-        RestTemplateBuilder restTemplateBuilder,
-        @Value("${sanyan.doubao.api-key:}") String apiKey,
-        @Value("${sanyan.doubao.base-url:https://ark.cn-beijing.volces.com/api/v3}") String baseUrl,
-        @Value("${sanyan.doubao.model:doubao-seed-character}") String model,
-        @Value("${sanyan.doubao.connect-timeout:PT3S}") Duration connectTimeout,
-        @Value("${sanyan.doubao.read-timeout:PT30S}") Duration readTimeout) {
+    /**
+     * 配置驱动的 task type 列表（comma-separated，case-insensitive，trim 空格）。
+     * 默认空 = supports() 全返回 false = 豆包不接任何任务（2026-05-25 切 DeepSeek 后的默认行为）。
+     * <p>Field-level @Value 而非构造器参数：
+     * <ul>
+     *   <li>不动现有构造器签名（最小侵入）</li>
+     *   <li>非 final，便于 ReflectionTestUtils.setField 在测试里动态切值</li>
+     * </ul>
+     */
+    @Value("${sanyan.llm.doubao.task-types:}")
+    private String taskTypes;
 ```
 
-改成在末尾加一个参数 `taskTypes`：
-```java
-public DoubaoAdapter(
-        RestTemplateBuilder restTemplateBuilder,
-        @Value("${sanyan.doubao.api-key:}") String apiKey,
-        @Value("${sanyan.doubao.base-url:https://ark.cn-beijing.volces.com/api/v3}") String baseUrl,
-        @Value("${sanyan.doubao.model:doubao-seed-character}") String model,
-        @Value("${sanyan.doubao.connect-timeout:PT3S}") Duration connectTimeout,
-        @Value("${sanyan.doubao.read-timeout:PT30S}") Duration readTimeout,
-        @Value("${sanyan.llm.doubao.task-types:}") String taskTypes) {
-```
-
-构造器内赋值（如果是 Lombok `@Data` 风格用 field，否则手写 setter，看现有代码风格保持一致）。注意：本字段需要可被 ReflectionTestUtils 修改，所以**不能是 final 通过构造器赋值**——改成普通 field + 构造器赋值。
-
-最简方案：把所有字段统一改 non-final（如果原来是 final），或者只对 `taskTypes` 用 mutable field 注入：
+3. 完全重写 `supports` 方法（替换当前 line 111-114）：
 
 ```java
-private String taskTypes;  // 通过构造器赋值，但非 final，便于测试用 ReflectionTestUtils
-```
-
-在构造器最后加 `this.taskTypes = taskTypes;`。
-
-3. 完全重写 `supports`（替换 line 111-114 当前的临时实验代码）：
-
-```java
-@Override
-public boolean supports(LlmTaskType taskType) {
-    if (taskTypes == null || taskTypes.isBlank()) {
-        return false;
+    @Override
+    public boolean supports(LlmTaskType taskType) {
+        if (taskTypes == null || taskTypes.isBlank()) {
+            return false;
+        }
+        Set<String> configured = Arrays.stream(taskTypes.split(","))
+                .map(s -> s.trim().toUpperCase())
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+        return configured.contains(taskType.name());
     }
-    Set<String> configured = Arrays.stream(taskTypes.split(","))
-            .map(s -> s.trim().toUpperCase())
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.toSet());
-    return configured.contains(taskType.name());
-}
 ```
 
 - [ ] **Step 1.4: 实现 — DeepSeekAdapter supports 配置化**
 
 对 `DeepSeekAdapter.java` 做完全对称的修改：
-- 构造器加 `@Value("${sanyan.llm.deepseek.task-types:USER_FACING,BACKGROUND}") String taskTypes`（注意 default 是两个都接，与 doubao 默认空形成默认值互斥）
-- 加 `private String taskTypes` field
-- 构造器内赋值
-- 重写 `supports()` 与 DoubaoAdapter 完全一样的实现
+
+1. 加同样的 3 个 imports（Arrays / Set / Collectors）
+2. **不动构造器签名**，加 field-level `@Value`，**注意 default 是 `USER_FACING,BACKGROUND`**（与 doubao 默认空形成互斥的默认行为，"所有环境都用 DeepSeek"）：
+
+```java
+    @Value("${sanyan.llm.deepseek.task-types:USER_FACING,BACKGROUND}")
+    private String taskTypes;
+```
+
+3. 重写 `supports()` 与 DoubaoAdapter 完全一样的实现（同样的 4 行解析 + contains）
+
+**关键差异**：默认值字符串不同（doubao 空 vs deepseek `USER_FACING,BACKGROUND`）。
 
 - [ ] **Step 1.5: 运行测试，确认 supports 用例全过**
 
