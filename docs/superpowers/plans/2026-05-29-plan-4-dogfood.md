@@ -1091,7 +1091,9 @@ git commit -m "feat(dogfood): run_dogfood.sh --plan4 flag (apply/rollback env + 
 
 **Files:** 无新代码，纯端到端验证 + 文档化。
 
-- [ ] **Step 1：跑全套**
+- [ ] **Step 1：跑全套两遍**（用户硬要求：稳定性验证）
+
+第一遍：
 
 ```bash
 cd /Users/aventador/code/3yan/server/scripts/dogfood
@@ -1107,9 +1109,20 @@ cd /Users/aventador/code/3yan/server/scripts/dogfood
 [plan4_b_recall]         PASS - 失联召回送达: '...'
 ```
 
-整体耗时 ≤ 5 分钟（apply 30s + 4 scenario ~3min + rollback 30s + 一些 buffer）。
+整体耗时 ≤ 5 分钟（apply 30s + 4 scenario ~3min + rollback 30s + buffer）。
 
-任一 scenario FAIL → 回到 Task 4-7 排查对应实现 + 重跑。
+**第一遍跑完后，立刻第二遍**（验稳定性，抓 flakiness / 残留状态 / dedup 失效等问题）：
+
+```bash
+./run_dogfood.sh --plan4 --user-id=905
+```
+
+两遍都必须 4/4 PASS。任一遍任一 scenario FAIL：
+- 单遍内 FAIL → 回到 Task 4-7 排查对应实现
+- 第一遍 PASS 第二遍 FAIL → 残留状态 / dedup bug / Redis 未清，回到 Task 3 cleanup helper 或 Task 9 rollback 路径排查
+- 第二遍 PASS 第一遍 FAIL → 首次 cold start 问题，回到 Task 9 服务重启等待逻辑排查
+
+修复后必须**重新跑两遍**全部 PASS 才算完。
 
 - [ ] **Step 2：bug-catching capability 验证（需用户授权部署）**
 
@@ -1159,6 +1172,43 @@ e. 再跑一次验证恢复：
 - [ ] **Step 3：把 Step 1 + Step 2 的输出贴到 PR description / commit body 作为 acceptance 记录**
 
 不需要新 commit，PR 模板里有 acceptance 段落即可。
+
+---
+
+## Task 11：整体最终 review（跨 Task）
+
+**Files:** 无新代码（纯审查）。
+
+Task 1-10 全部完成后，对整个 plan-4-dogfood 引入做一次**跨 Task 的最终代码审查**。前 10 个 Task 的 per-task 两轮审查（spec + code quality）只保证单 Task 内对、不保证 Task 间衔接对。本 Task 防止以下整体性问题：
+
+- 各 Task 间 helper 命名 / 签名 / 调用前后不一致（Task 3 定义 vs Task 4-7 使用）
+- 多个 commit 累积下来夹带了不在 spec 范围内的改动
+- env override key（`scan-interval-ms` 等）在 Task 1 yml / Task 2 conf / Task 9 shell 三处的写法一致
+- commit history 顺序合理、message 都符合规范
+- 生产代码改动（Task 1 RecallTrigger）对线上行为是否真零影响
+- dogfood 脚本作为一个 feature 整体合并到 master 是否安全
+
+- [ ] **Step 1：派独立审查子代理**
+
+dispatch general-purpose 子代理，prompt 包含：
+
+- 让它跑 `cd /Users/aventador/code/3yan/server && git log --oneline <Task1 之前的 commit>..HEAD` 看 server 子模块累积 commit 列表
+- 跑 `cd /Users/aventador/code/3yan && git log --oneline <Task1 之前的主仓 commit>..HEAD` 看主仓 commit 列表
+- 完整 diff：`git diff <Task1 之前的 SHA>..HEAD -- .` 在两个仓里各跑一次
+- 给它注入 spec 路径 + plan 路径 + 本 Task 上面列的 5 个检查点
+
+- [ ] **Step 2：根据审查结果决策**
+
+- ✅ 全 clear → 进入下一步（Task 12: 提交主仓子模块引用 + push + 准备 PR）
+- ❌ 找到问题 → 按问题严重度决定：
+  - Critical / Important：派 fix 子代理修，修完再走本 Task Step 1 重审
+  - Minor：累积到 commit message body / PR description 里说明，不阻塞合并
+
+- [ ] **Step 3：把审查结果汇报给 controller**
+
+controller 决定是否进入 push 主仓 + open PR。
+
+> 注：本 Task 不产生 git commit（纯审查 + 可能触发 fix Task）。
 
 ---
 
