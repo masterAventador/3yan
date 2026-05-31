@@ -107,7 +107,9 @@ user_auth_identity(
 |---|---|---|
 | `POST /api/auth/oauth/challenge` | `{}` | `{nonce}` |
 | `POST /api/auth/oauth/login` | `{provider, credential, nonce}` | 命中：`LoginData{token,userId}`；未命中：`{needBind:true, bindTicket}` |
-| `POST /api/auth/oauth/bind-phone` | `{bindTicket, phone, code, password?}` | 成功：`LoginData{token,userId}`；已有账号需本人证明：`{needMerge:true}` |
+| `POST /api/auth/oauth/bind-phone` | `{bindTicket, phone, code, password?}` | 成功：`LoginData{token,userId}`；已有账号需本人证明：`{needMergeAuth:true}`（success=true 的数据态）；传了密码但错：错误码 `NEED_MERGE_AUTH(1014)` |
+
+> **needMergeAuth 客户端语义（实现确认，Flutter 子计划须遵循）**：bind-phone 在第 4 步即消费 bindTicket 的 jti（S6 要求，在验短信/查库/写库之前）。因此返回 `needMergeAuth:true` 时该 bindTicket **已失效**，客户端**不能**用同一 bindTicket 带密码重试（会撞 `BIND_TICKET_USED(1013)`）。正确流程：拿到 needMergeAuth → 引导用户「用该手机号登录后在设置里绑定」（合并 UI 二期），或**重新发起第三方登录**取新 bindTicket 再带密码绑。这是 S6（jti 写库前消费）与 S4（needMerge 引导补证明）在非终态返回上的取舍——当前实现 fail-closed 安全，代价是 needMerge 后需重新走一次第三方授权。
 | `POST /api/auth/sms/send`（已存在，增强） | `{phone}` | 成功——内部走 SmsSender；加限频/验证码防刷 |
 
 错误码：`UserErrCode` 新增（排 1007+，同步 `ERROR_CODE_REGISTRY.md`）：`WECHAT_UNIONID_MISSING`、`BIND_TICKET_USED`、`BIND_TICKET_INVALID`、`OAUTH_VERIFY_FAILED`、`SMS_CODE_INVALID`、`SMS_RATE_LIMITED`、`NEED_MERGE_AUTH` 等。
@@ -194,4 +196,10 @@ user_auth_identity(
 - **Phase 4**：Flutter 客户端（按钮 + SDK + 绑手机号页 + API）。
 - **Phase 5**：凭证就绪后真机 e2e + dogfood。
 
-**上线 gate：** ① 腾讯云签名/模板过审 + 密钥配置（prod fail-fast）；② 微信 unionid 可返回；③ Apple aud 白名单配置正确；④ JWT_SECRET 改掉默认值；⑤ S1–S8 全部实现并测试通过。
+**上线 gate：** ① 腾讯云签名/模板过审 + 密钥配置（prod fail-fast）；② 微信 unionid 可返回；③ Apple aud 白名单配置正确（漏配则 fail-closed，Apple 登录全失败）；④ JWT_SECRET / OAUTH_BIND_TICKET_SECRET 改掉默认值；⑤ S1–S8、S10 全部实现并测试通过。
+
+**Follow-up（server 实现完成后登记，二期处理）：**
+- **S9 JWT 吊销**（中危，本期 defer）：access token 已埋 jti，但吊销列表 / token-version 机制未实现。合并、绑/解绑、改密后强制该用户已签 token 失效——二期补。
+- **JwtUtil `typ==null` 过渡期收口**：`parseUserId` 当前对 `typ==null` 的旧 token 放行（平滑过渡）。一个发布周期后（存量旧 token 全部过期/刷新完）移除该放行，收紧为 `typ` 必须 `==ACCESS`。
+- **merge-path 并发 recover 单测**：`OauthBindService.attachOrRecover` 的 DataIntegrityViolation 降级分支与 createOrRecover 共用 `recoverBoundUser`，逻辑已覆盖但无专属单测，二期补 `bind_existingAccount_concurrentAttach_recovers`。
+- 第三方资料回填、合并/解绑设置页 UI（见非目标）。
